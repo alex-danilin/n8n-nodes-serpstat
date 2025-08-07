@@ -24,10 +24,10 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Credentials
 
-You need a Serpstat API token to use this node. You can test Serpstat API with a (free trial)[https://serpstat.com/page/free-trial/]. 
-Consider purchasing Serpstat (subscription plans)[https://serpstat.com/pay/] to increase data volume.
-For heavy API usage, we offer special API plans. (Contact us)[https://data.serpstat.com/#contact-us] for the details.
-After you get access to the Serpstat API, create a new token in your (user profile)[https://serpstat.com/users/profile/].
+You need a Serpstat API token to use this node. You can test Serpstat API with a [free trial](https://serpstat.com/page/free-trial/). 
+Consider purchasing Serpstat [subscription plans](https://serpstat.com/pay/) to increase data volume.
+For heavy API usage, we offer special API plans. [Contact us](https://data.serpstat.com/#contact-us) for the details.
+After you get access to the Serpstat API, create a new token in your [user profile](https://serpstat.com/users/profile/).
 
 ## Compatibility
 
