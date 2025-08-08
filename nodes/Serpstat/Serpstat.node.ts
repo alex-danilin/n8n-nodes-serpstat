@@ -30,7 +30,7 @@ export class Serpstat implements INodeType {
 			method: 'POST',
 			json: true,
 		},
-		properties: [
+        properties: [
 			{
 				displayName: 'Domain',
 				name: 'domain',
@@ -330,59 +330,60 @@ export class Serpstat implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
-			const domain = this.getNodeParameter('domain', i, '') as string;
-			const se = this.getNodeParameter('se', i, '') as string;
-			const additionalFields = this.getNodeParameter('additionalFields', i, {}) as {
-				page?: number;
-				size?: number;
-				sortField?: string;
-				sortOrder?: 'asc' | 'desc';
-			};
-
-			const params: any = {
-				domain,
-				se,
-			};
-
-			if (additionalFields.page) {
-				params.page = additionalFields.page;
-			}
-			if (additionalFields.size) {
-				params.size = additionalFields.size;
-			}
-			if (additionalFields.sortField && additionalFields.sortOrder) {
-				params.sort = {
-					[additionalFields.sortField]: additionalFields.sortOrder,
-				};
-			}
-
-						const credentials = await this.getCredentials('serpstatApi');
-			const token = credentials.token;
-
-			const body = {
-				id: `n8n-request-${Date.now()}`,
-				method: 'SerpstatDomainProcedure.getOrganicCompetitorsPage',
-				params,
-			};
-
 			try {
-				const responseData = await this.helpers.httpRequest({ method: 'POST', url: `https://api.serpstat.com/v4/?token=${token}`, body, json: true });
+				const domain = this.getNodeParameter('domain', i, '') as string;
+				const se = this.getNodeParameter('se', i, '') as string;
+				const additionalFields = this.getNodeParameter('additionalFields', i, {}) as {
+					page?: number;
+					size?: number;
+					sortField?: string;
+					sortOrder?: 'asc' | 'desc';
+				};
 
-				if (responseData.error) {
-					const errorMessage = responseData.error.message || JSON.stringify(responseData.error);
-					throw new NodeOperationError(this.getNode(), new Error(`Serpstat API error: ${errorMessage}`));
+				const params: any = {
+					domain,
+					se,
+				};
+
+				if (additionalFields.page) {
+					params.page = additionalFields.page;
+				}
+				if (additionalFields.size) {
+					params.size = additionalFields.size;
+				}
+				if (additionalFields.sortField && additionalFields.sortOrder) {
+					params.sort = {
+						[additionalFields.sortField]: additionalFields.sortOrder,
+					};
 				}
 
-				if (responseData.result && responseData.result.data) {
-					returnData.push(...this.helpers.returnJsonArray(responseData.result.data));
-				} else {
-					console.log('Serpstat API response did not contain result.data:', JSON.stringify(responseData, null, 2));
-				}
+							const credentials = await this.getCredentials('serpstatApi');
+				const token = credentials.token;
+
+				const body = {
+					id: `n8n-request-${Date.now()}`,
+					method: 'SerpstatDomainProcedure.getOrganicCompetitorsPage',
+					params,
+				};
+
+					const responseData = await this.helpers.httpRequest({ method: 'POST', url: `https://api.serpstat.com/v4/?token=${token}`, body, json: true });
+
+					if (responseData.error) {
+						const errorMessage = responseData.error.message || JSON.stringify(responseData.error);
+						throw new NodeOperationError(this.getNode(), new Error(`Serpstat API error: ${errorMessage}`));
+					}
+
+					if (responseData.result && responseData.result.data) {
+						returnData.push(...this.helpers.returnJsonArray(responseData.result.data));
+					} else {
+						throw new NodeOperationError(this.getNode(), new Error('Serpstat API response did not contain result.data'));
+					}
 			} catch (error) {
-				if (error instanceof NodeOperationError) {
+				if (this.continueOnFail()) {
+					returnData.push({ json: { error: (error as Error).message } });
+				} else {
 					throw error;
 				}
-				throw new NodeOperationError(this.getNode(), error);
 			}
 		}
 
