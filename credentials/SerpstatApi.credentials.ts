@@ -1,7 +1,8 @@
 import {
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
 	ICredentialType,
 	INodeProperties,
-	IHttpRequestMethods,
 } from 'n8n-workflow';
 
 export class SerpstatApi implements ICredentialType {
@@ -19,20 +20,17 @@ export class SerpstatApi implements ICredentialType {
 			},
 		},
 	];
-	test = {
-		request: {
-			method: 'POST' as IHttpRequestMethods,
-			url: 'https://api.serpstat.com/v4/',
-			body: `{
-				"id": "n8n-test-{{$request.timestamp}}",
-				"method": "SerpstatAccountProcedure.getApiBalance",
-				"params": {
-					"token": "{{$credentials.token}}"
-				}
-			}`,
-			headers: {
-				'Content-Type': 'application/json',
+	authenticate: IAuthenticateGeneric = {
+		type: 'generic',
+		properties: {
+			qs: {
+				'token': '={{$credentials.token}}',
 			},
+		},
+	};
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://api.serpstat.com/v4/',
 		},
 	};
 }
