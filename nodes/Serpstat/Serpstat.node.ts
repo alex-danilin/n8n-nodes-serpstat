@@ -357,16 +357,18 @@ export class Serpstat implements INodeType {
 					};
 				}
 
-							const credentials = await this.getCredentials('serpstatApi');
-				const token = credentials.token;
-
-				const body = {
+						const body = {
 					id: `n8n-request-${Date.now()}`,
 					method: 'SerpstatDomainProcedure.getOrganicCompetitorsPage',
 					params,
 				};
 
-					const responseData = await this.helpers.httpRequest({ method: 'POST', url: `https://api.serpstat.com/v4/?token=${token}`, body, json: true });
+				const responseData = await this.helpers.httpRequestWithAuthentication.call(this, 'serpstatApi', {
+					method: 'POST',
+					url: 'https://api.serpstat.com/v4/',
+					body,
+					json: true,
+				});
 
 					if (responseData.error) {
 						const errorMessage = responseData.error.message || JSON.stringify(responseData.error);
@@ -374,7 +376,8 @@ export class Serpstat implements INodeType {
 					}
 
 					if (responseData.result && responseData.result.data) {
-						returnData.push(...this.helpers.returnJsonArray(responseData.result.data));
+						const newItems = this.helpers.returnJsonArray(responseData.result.data);
+						returnData.push(...newItems.map((item) => ({ json: item, pairedItem: { item: i } })));
 					} else {
 						throw new NodeOperationError(this.getNode(), new Error('Serpstat API response did not contain result.data'));
 					}
