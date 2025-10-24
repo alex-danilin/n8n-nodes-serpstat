@@ -37,7 +37,7 @@ export class Serpstat implements INodeType {
 				type: 'string',
 				default: '',
 				required: true,
-				description: 'The domain name to get competitors for. Example: allo.ua.',
+				description: 'The domain name to get competitors for. Example: serpstat.com.',
 			},
 			{
 				displayName: 'Search Engine',
