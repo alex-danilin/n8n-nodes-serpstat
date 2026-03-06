@@ -3,6 +3,7 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
 
@@ -18,8 +19,8 @@ export class Serpstat implements INodeType {
 		defaults: {
 			name: 'Serpstat',
 		},
-		inputs: ['main'] as any, // TODO: Fix type
-		outputs: ['main'] as any, // TODO: Fix type
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'serpstatApi',
@@ -30,13 +31,52 @@ export class Serpstat implements INodeType {
 			method: 'POST',
 			json: true,
 		},
-        properties: [
+		properties: [
+			{
+				displayName: 'Resource',
+				name: 'resource',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Domain',
+						value: 'domain',
+					},
+				],
+				default: 'domain',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['domain'],
+					},
+				},
+				options: [
+					{
+						name: 'Get Organic Competitors',
+						value: 'getOrganicCompetitors',
+						action: 'Get organic competitors for a domain',
+						description: 'Get organic competitors for a domain',
+					},
+				],
+				default: 'getOrganicCompetitors',
+			},
 			{
 				displayName: 'Domain',
 				name: 'domain',
 				type: 'string',
 				default: '',
 				required: true,
+				displayOptions: {
+					show: {
+						resource: ['domain'],
+						operation: ['getOrganicCompetitors'],
+					},
+				},
 				description: 'The domain name to get competitors for. Example: serpstat.com.',
 			},
 			{
@@ -45,6 +85,12 @@ export class Serpstat implements INodeType {
 				type: 'options',
 				default: 'g_us',
 				required: true,
+				displayOptions: {
+					show: {
+						resource: ['domain'],
+						operation: ['getOrganicCompetitors'],
+					},
+				},
 				description: 'The search engine to use. Example: g_us.',
 				options: [
 					{ name: 'Bing_us', value: 'bing_us' },
@@ -287,6 +333,12 @@ export class Serpstat implements INodeType {
 				type: 'collection',
 				placeholder: 'Add Field',
 				default: {},
+				displayOptions: {
+					show: {
+						resource: ['domain'],
+						operation: ['getOrganicCompetitors'],
+					},
+				},
 				options: [
 					{
 						displayName: 'Page',
@@ -328,59 +380,79 @@ export class Serpstat implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
+		const resource = this.getNodeParameter('resource', 0) as string;
+		const operation = this.getNodeParameter('operation', 0) as string;
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const domain = this.getNodeParameter('domain', i, '') as string;
-				const se = this.getNodeParameter('se', i, '') as string;
-				const additionalFields = this.getNodeParameter('additionalFields', i, {}) as {
-					page?: number;
-					size?: number;
-					sortField?: string;
-					sortOrder?: 'asc' | 'desc';
-				};
+				if (resource === 'domain') {
+					if (operation === 'getOrganicCompetitors') {
+						const domain = this.getNodeParameter('domain', i, '') as string;
+						const se = this.getNodeParameter('se', i, '') as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i, {}) as {
+							page?: number;
+							size?: number;
+							sortField?: string;
+							sortOrder?: 'asc' | 'desc';
+						};
 
-				const params: any = {
-					domain,
-					se,
-				};
+						const params: any = {
+							domain,
+							se,
+						};
 
-				if (additionalFields.page) {
-					params.page = additionalFields.page;
-				}
-				if (additionalFields.size) {
-					params.size = additionalFields.size;
-				}
-				if (additionalFields.sortField && additionalFields.sortOrder) {
-					params.sort = {
-						[additionalFields.sortField]: additionalFields.sortOrder,
-					};
-				}
+						if (additionalFields.page) {
+							params.page = additionalFields.page;
+						}
+						if (additionalFields.size) {
+							params.size = additionalFields.size;
+						}
+						if (additionalFields.sortField && additionalFields.sortOrder) {
+							params.sort = {
+								[additionalFields.sortField]: additionalFields.sortOrder,
+							};
+						}
 
 						const body = {
-					id: `n8n-request-${Date.now()}`,
-					method: 'SerpstatDomainProcedure.getOrganicCompetitorsPage',
-					params,
-				};
+							id: `n8n-request-${Date.now()}`,
+							method: 'SerpstatDomainProcedure.getOrganicCompetitorsPage',
+							params,
+						};
 
-				const responseData = await this.helpers.httpRequestWithAuthentication.call(this, 'serpstatApi', {
-					method: 'POST',
-					url: 'https://api.serpstat.com/v4/',
-					body,
-					json: true,
-				});
+						const responseData = await this.helpers.httpRequestWithAuthentication.call(
+							this,
+							'serpstatApi',
+							{
+								method: 'POST',
+								url: 'https://api.serpstat.com/v4/',
+								body,
+								json: true,
+							},
+						);
 
-					if (responseData.error) {
-						const errorMessage = responseData.error.message || JSON.stringify(responseData.error);
-						throw new NodeOperationError(this.getNode(), new Error(`Serpstat API error: ${errorMessage}`));
+						if (responseData.error) {
+							const errorMessage = responseData.error.message || JSON.stringify(responseData.error);
+							throw new NodeOperationError(
+								this.getNode(),
+								new Error(`Serpstat API error: ${errorMessage}`),
+								{ itemIndex: i },
+							);
+						}
+
+						if (responseData.result && responseData.result.data) {
+							const newItems = this.helpers.returnJsonArray(responseData.result.data);
+							returnData.push(
+								...newItems.map((item: any) => ({ json: item, pairedItem: { item: i } })),
+							);
+						} else {
+							throw new NodeOperationError(
+								this.getNode(),
+								new Error('Serpstat API response did not contain result.data'),
+								{ itemIndex: i },
+							);
+						}
 					}
-
-					if (responseData.result && responseData.result.data) {
-						const newItems = this.helpers.returnJsonArray(responseData.result.data);
-						returnData.push(...newItems.map((item) => ({ json: item, pairedItem: { item: i } })));
-					} else {
-						throw new NodeOperationError(this.getNode(), new Error('Serpstat API response did not contain result.data'));
-					}
+				}
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({ json: { error: (error as Error).message } });
