@@ -16,7 +16,14 @@ This is an n8n community node. It lets you use Serpstat in your n8n workflows.
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+To install this node in your n8n instance:
+
+1. Go to **Settings > Community Nodes**.
+2. Click **Install a node**.
+3. Enter `n8n-nodes-serpstat` as the **npm Package Name**.
+4. Agree to the terms and click **Install**.
+
+For more details, see the [n8n community nodes installation guide](https://docs.n8n.io/integrations/community-nodes/installation/).
 
 ## Operations
 
@@ -38,6 +45,20 @@ Compatible with n8n version 1.105.3 or higher.
 Each user can have only one API token. There are no sandboxes, test endpoints, or any other test environment.
 During the testing phase, limit the data size by using the Page and Size optional fields. This way, you can test your workflows without burning all API credits. 
 If you are not familiar with n8n, check [quickstart guides](https://docs.n8n.io/try-it-out/).
+
+## Development
+
+### Setup
+Install dependencies:
+```bash
+npm install --legacy-peer-deps
+```
+
+### Commands
+* `npm run build`: Compile the node files and build icons.
+* `npm run dev`: Build and watch for code changes.
+* `npm run lint`: Lint the codebase.
+* `npm run release`: Interactive CLI to bump versions and release a new tag (triggers GitHub Actions publication).
 
 ## Resources
 
