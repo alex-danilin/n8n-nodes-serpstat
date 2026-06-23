@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: read
       id-token: write # Required for npm OIDC Trusted Publishing and provenance
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # Map secret to job env to allow step conditional evaluation
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,11 +26,11 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Publish to npm (OIDC Trusted Publishing)
-        if: "${{ secrets.NPM_TOKEN == '' }}"
+        if: "${{ env.NPM_TOKEN == '' }}"
         run: npm publish --provenance --access public
 
       - name: Publish to npm (Token Fallback)
-        if: "${{ secrets.NPM_TOKEN != '' }}"
+        if: "${{ env.NPM_TOKEN != '' }}"
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
