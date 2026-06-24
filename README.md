@@ -46,6 +46,44 @@ Each user can have only one API token. There are no sandboxes, test endpoints, o
 During the testing phase, limit the data size by using the Page and Size optional fields. This way, you can test your workflows without burning all API credits. 
 If you are not familiar with n8n, check [quickstart guides](https://docs.n8n.io/try-it-out/).
 
+### Usage Example: Get Organic Competitors
+
+Here is a worked example showing how to configure the node to get organic search competitors for a domain.
+
+#### 1. Configure Node Parameters
+- **Resource**: `Domain`
+- **Operation**: `Get Organic Competitors`
+- **Domain**: `serpstat.com` (or any domain you wish to analyze)
+- **Search Engine**: `G_us` (Google US)
+- **Additional Fields** (Optional):
+  - **Page**: `1`
+  - **Size**: `2` (Limits the returned items to 2 to conserve API credits)
+
+#### 2. Expected Output
+The node returns an array of organic search competitors and their associated SEO metrics, which you can use directly in your workflow.
+
+Example JSON output structure:
+```json
+[
+  {
+    "domain": "semrush.com",
+    "competitor_rank": 1,
+    "common_keywords": 4512,
+    "out_of_search": 12450,
+    "relevance": 54.32,
+    "visibility": 85.1
+  },
+  {
+    "domain": "ahrefs.com",
+    "competitor_rank": 2,
+    "common_keywords": 4120,
+    "out_of_search": 15120,
+    "relevance": 48.15,
+    "visibility": 79.4
+  }
+]
+```
+
 ## Development
 
 ### Setup

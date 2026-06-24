@@ -2,7 +2,7 @@
 	"node": "n8n-nodes-serpstat.Serpstat",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Web & Event Tracking"],
+	"categories": ["Analytics"],
 	"resources": {
 		"credentialDocumentation": [
 			{

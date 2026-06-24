@@ -3,6 +3,8 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	JsonObject,
+	NodeApiError,
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
@@ -27,10 +29,6 @@ export class Serpstat implements INodeType {
 				required: true,
 			},
 		],
-		requestDefaults: {
-			method: 'POST',
-			json: true,
-		},
 		properties: [
 			{
 				displayName: 'Resource',
@@ -127,6 +125,7 @@ export class Serpstat implements INodeType {
 					{ name: 'G_by', value: 'g_by' },
 					{ name: 'G_bz', value: 'g_bz' },
 					{ name: 'G_ca', value: 'g_ca' },
+					{ name: 'G_cc', value: 'g_cc' },
 					{ name: 'G_cd', value: 'g_cd' },
 					{ name: 'G_cf', value: 'g_cf' },
 					{ name: 'G_cg', value: 'g_cg' },
@@ -324,7 +323,6 @@ export class Serpstat implements INodeType {
 					{ name: 'G_za', value: 'g_za' },
 					{ name: 'G_zm', value: 'g_zm' },
 					{ name: 'G_zw', value: 'g_zw' },
-					{ name: 'G_сс', value: 'g_сс' },
 				],
 			},
 			{
@@ -457,7 +455,7 @@ export class Serpstat implements INodeType {
 				if (this.continueOnFail()) {
 					returnData.push({ json: { error: (error as Error).message } });
 				} else {
-					throw error;
+					throw new NodeApiError(this.getNode(), error as JsonObject);
 				}
 			}
 		}
